@@ -87,11 +87,12 @@ jobs:
           
           Write-Host "Using MakePri: $($makepri.FullName)"
           
-          # Remove old pri files
+          # Remove old pri files and config
           Get-ChildItem "msix-package/*.pri" -ErrorAction SilentlyContinue | Remove-Item -Force
+          Remove-Item "msix-package/priconfig.xml" -ErrorAction SilentlyContinue
           
           & $makepri.FullName createconfig /cf "msix-package/priconfig.xml" /dq en-US /o
-          & $makepri.FullName new /pr "msix-package" /cf "msix-package/priconfig.xml" /of "msix-package/resources.pri" /o
+          & $makepri.FullName new /pr "msix-package" /cf "msix-package/priconfig.xml" /mn "msix-package/AppxManifest.xml" /of "msix-package/resources.pri" /o
 
       - name: Create MSIX package
         shell: pwsh

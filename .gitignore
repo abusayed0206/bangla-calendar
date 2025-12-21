@@ -24,3 +24,8 @@
 # OS specific
 .DS_Store
 Thumbs.db
+
+# MSIX build artifacts (generated during build)
+msix-package/*.pri
+msix-package/priconfig.xml
+msix-package/*.exe
