@@ -56,8 +56,9 @@ cargo build --release
 
 ## 📸 Screenshots
 
-<!-- Add screenshots here -->
-*Screenshots coming soon*
+![explorer_KaJ4jK4uAe](https://github.com/user-attachments/assets/56b889c4-8874-445c-a81f-92f22e77ad0e)
+
+
 
 ## 🛠️ Tech Stack
 
@@ -83,15 +84,6 @@ cargo build --release
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Abu Sayed**
-- Website: [sayed.app](https://sayed.app)
-- GitHub: [@abusayed0206](https://github.com/abusayed0206)
 
 ---
 
