@@ -71,11 +71,12 @@ jobs:
           # Copy assets
           Copy-Item "msix-package/Assets/*" "$stagingDir/Assets/" -Recurse
           
-          # Copy manifest - update version inline using simple file copy and sed-like replacement
+          # Copy manifest and update Identity Version only (not XML declaration version)
           $manifestPath = "$stagingDir/AppxManifest.xml"
           Copy-Item "msix-package/AppxManifest.xml" $manifestPath
           $content = [System.IO.File]::ReadAllText($manifestPath)
-          $content = $content -replace 'Version="[\d\.]+"', "Version=`"$msixVersion`""
+          # Only replace the Identity element's Version attribute (matches "1.0.0.0" pattern with exactly 4 parts)
+          $content = $content -replace '(<Identity[^>]*Version=")[\d]+\.[\d]+\.[\d]+\.[\d]+(")', "`${1}$msixVersion`${2}"
           [System.IO.File]::WriteAllText($manifestPath, $content)
           
           # Copy binary
