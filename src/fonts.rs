@@ -1,11 +1,8 @@
 // fonts.rs - Cached font management for memory efficiency
 
-use std::sync::atomic::{AtomicPtr, Ordering};
-use windows::{
-    core::*,
-    Win32::Graphics::Gdi::*,
-};
 use crate::constants::MENU_FONT_SIZE;
+use std::sync::atomic::{AtomicPtr, Ordering};
+use windows::{Win32::Graphics::Gdi::*, core::*};
 
 // Embed the Ekush font directly into the executable
 const EKUSH_FONT_DATA: &[u8] = include_bytes!("../fonts/Ekush-Regular.ttf");
@@ -75,9 +72,14 @@ pub fn get_cal_sub_font() -> HFONT {
 fn create_ekush_font(size: i32, weight: i32) -> HFONT {
     unsafe {
         CreateFontW(
-            size, 0, 0, 0,
+            size,
+            0,
+            0,
+            0,
             weight,
-            0, 0, 0,
+            0,
+            0,
+            0,
             DEFAULT_CHARSET,
             OUT_DEFAULT_PRECIS,
             CLIP_DEFAULT_PRECIS,
@@ -101,19 +103,43 @@ pub fn install_fonts() {
 
         if num_fonts > 0 {
             // Menu font
-            MENU_FONT_PTR.store(create_ekush_font(MENU_FONT_SIZE, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
-            
+            MENU_FONT_PTR.store(
+                create_ekush_font(MENU_FONT_SIZE, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
+
             // Widget fonts (cached)
-            FONT_LINE1_PTR.store(create_ekush_font(26, FW_SEMIBOLD.0 as i32).0, Ordering::Relaxed);
-            FONT_LINE2_PTR.store(create_ekush_font(22, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
-            FONT_LINE3_PTR.store(create_ekush_font(18, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
-            
+            FONT_LINE1_PTR.store(
+                create_ekush_font(26, FW_SEMIBOLD.0 as i32).0,
+                Ordering::Relaxed,
+            );
+            FONT_LINE2_PTR.store(
+                create_ekush_font(22, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
+            FONT_LINE3_PTR.store(
+                create_ekush_font(18, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
+
             // Calendar fonts (cached)
             CAL_HEADER_FONT_PTR.store(create_ekush_font(22, FW_BOLD.0 as i32).0, Ordering::Relaxed);
-            CAL_NAV_FONT_PTR.store(create_ekush_font(20, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
-            CAL_WEEKDAY_FONT_PTR.store(create_ekush_font(14, FW_SEMIBOLD.0 as i32).0, Ordering::Relaxed);
-            CAL_DATE_FONT_PTR.store(create_ekush_font(18, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
-            CAL_SUB_FONT_PTR.store(create_ekush_font(14, FW_NORMAL.0 as i32).0, Ordering::Relaxed);
+            CAL_NAV_FONT_PTR.store(
+                create_ekush_font(20, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
+            CAL_WEEKDAY_FONT_PTR.store(
+                create_ekush_font(14, FW_SEMIBOLD.0 as i32).0,
+                Ordering::Relaxed,
+            );
+            CAL_DATE_FONT_PTR.store(
+                create_ekush_font(18, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
+            CAL_SUB_FONT_PTR.store(
+                create_ekush_font(14, FW_NORMAL.0 as i32).0,
+                Ordering::Relaxed,
+            );
         }
     }
 }

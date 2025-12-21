@@ -22,10 +22,10 @@ pub const POS_KEY_Y: &str = "PosY";
 pub const COUNTRY_KEY: &str = "Country";
 
 // UI Colors - Modern dark theme
-pub const BG_COLOR: u32 = 0x00201A18;      // Dark brown-black background
-pub const TEXT_PRIMARY: u32 = 0x00FFFFFF;   // White text
+pub const BG_COLOR: u32 = 0x00201A18; // Dark brown-black background
+pub const TEXT_PRIMARY: u32 = 0x00FFFFFF; // White text
 pub const TEXT_SECONDARY: u32 = 0x00B0B0B0; // Light gray
-pub const BORDER_COLOR: u32 = 0x00404040;   // Subtle border
+pub const BORDER_COLOR: u32 = 0x00404040; // Subtle border
 
 // Widget dimensions
 pub const WIDGET_HEIGHT: i32 = 90;
@@ -44,10 +44,10 @@ pub const MENU_CHECK_COLOR: u32 = 0x00008800;
 // Bangla ordinal suffixes (১লা, ২রা, etc.)
 pub const BANGLA_ORDINALS: &[&str] = &[
     "",     // 0 (not used)
-    "১লা",  // 1
-    "২রা",  // 2
-    "৩রা",  // 3
-    "৪ঠা",  // 4
+    "১লা",   // 1
+    "২রা",   // 2
+    "৩রা",   // 3
+    "৪ঠা",   // 4
     "৫ই",   // 5
     "৬ই",   // 6
     "৭ই",   // 7
@@ -79,18 +79,18 @@ pub const BANGLA_ORDINALS: &[&str] = &[
 
 // Bangla month names
 pub const BANGLA_MONTHS: &[&str] = &[
-    "বৈশাখ",    // 0 - Boishakh (Apr-May)
+    "বৈশাখ",   // 0 - Boishakh (Apr-May)
     "জ্যৈষ্ঠ",  // 1 - Jyoishtho (May-Jun)
     "আষাঢ়",    // 2 - Asharh (Jun-Jul)
     "শ্রাবণ",   // 3 - Shrabon (Jul-Aug)
     "ভাদ্র",    // 4 - Bhadro (Aug-Sep)
-    "আশ্বিন",   // 5 - Ashwin (Sep-Oct)
+    "আশ্বিন",  // 5 - Ashwin (Sep-Oct)
     "কার্তিক",  // 6 - Kartik (Oct-Nov)
     "অগ্রহায়ণ", // 7 - Ogrohayon (Nov-Dec)
-    "পৌষ",      // 8 - Poush (Dec-Jan)
-    "মাঘ",      // 9 - Magh (Jan-Feb)
-    "ফাল্গুন",  // 10 - Falgun (Feb-Mar)
-    "চৈত্র",    // 11 - Choitro (Mar-Apr)
+    "পৌষ",    // 8 - Poush (Dec-Jan)
+    "মাঘ",     // 9 - Magh (Jan-Feb)
+    "ফাল্গুন",   // 10 - Falgun (Feb-Mar)
+    "চৈত্র",   // 11 - Choitro (Mar-Apr)
 ];
 
 // Bangla seasons (ঋতু)
@@ -99,24 +99,24 @@ pub const BANGLA_SEASONS: &[&str] = &[
     "গ্রীষ্ম", // 1 - Jyoishtho
     "বর্ষা",   // 2 - Borsha (Rainy) - Asharh
     "বর্ষা",   // 3 - Shrabon
-    "শরৎ",     // 4 - Shorot (Autumn) - Bhadro
-    "শরৎ",     // 5 - Ashwin
-    "হেমন্ত",  // 6 - Hemonto (Late Autumn) - Kartik
-    "হেমন্ত",  // 7 - Ogrohayon
-    "শীত",     // 8 - Sheet (Winter) - Poush
-    "শীত",     // 9 - Magh
-    "বসন্ত",   // 10 - Boshonto (Spring) - Falgun
-    "বসন্ত",   // 11 - Choitro
+    "শরৎ",   // 4 - Shorot (Autumn) - Bhadro
+    "শরৎ",   // 5 - Ashwin
+    "হেমন্ত", // 6 - Hemonto (Late Autumn) - Kartik
+    "হেমন্ত", // 7 - Ogrohayon
+    "শীত",   // 8 - Sheet (Winter) - Poush
+    "শীত",   // 9 - Magh
+    "বসন্ত",  // 10 - Boshonto (Spring) - Falgun
+    "বসন্ত",  // 11 - Choitro
 ];
 
 // Bangla weekday names
 pub const BANGLA_WEEKDAYS: &[&str] = &[
     "রবিবার",    // 0 - Sunday
     "সোমবার",    // 1 - Monday
-    "মঙ্গলবার",  // 2 - Tuesday
-    "বুধবার",    // 3 - Wednesday
+    "মঙ্গলবার",   // 2 - Tuesday
+    "বুধবার",     // 3 - Wednesday
     "বৃহস্পতিবার", // 4 - Thursday
-    "শুক্রবার",  // 5 - Friday
+    "শুক্রবার",    // 5 - Friday
     "শনিবার",    // 6 - Saturday
 ];
 

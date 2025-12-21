@@ -1,29 +1,25 @@
 #![windows_subsystem = "windows"]
 
-mod constants;
 mod calendar;
-mod registry;
-mod menu;
-mod ui;
-mod punjika;
+mod constants;
 mod fonts;
+mod menu;
+mod punjika;
+mod registry;
+mod ui;
 
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicPtr, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicPtr, AtomicU32, Ordering};
 use windows::{
-    core::*,
-    Win32::Foundation::*,
-    Win32::Graphics::Gdi::*,
-    Win32::Graphics::Dwm::*,
-    Win32::System::LibraryLoader::GetModuleHandleW,
-    Win32::UI::WindowsAndMessaging::*,
+    Win32::Foundation::*, Win32::Graphics::Dwm::*, Win32::Graphics::Gdi::*,
+    Win32::System::LibraryLoader::GetModuleHandleW, Win32::UI::WindowsAndMessaging::*, core::*,
 };
 
 use constants::*;
-use registry::*;
-use menu::*;
-use ui::*;
-use punjika::show_calendar;
 use fonts::install_fonts;
+use menu::*;
+use punjika::show_calendar;
+use registry::*;
+use ui::*;
 
 // Embed the ICO file
 const FLAG_ICO_DATA: &[u8] = include_bytes!("../assets/Flag_of_Bangladesh.ico");
@@ -51,9 +47,9 @@ fn set_flag_icon(icon: HICON) {
 /// Load Bangladesh flag icon from embedded ICO file
 fn create_flag_icon() {
     unsafe {
-        if let Ok(ico) = CreateIconFromResourceEx(
-            FLAG_ICO_DATA, true, 0x00030000, 32, 32, LR_DEFAULTCOLOR
-        ) {
+        if let Ok(ico) =
+            CreateIconFromResourceEx(FLAG_ICO_DATA, true, 0x00030000, 32, 32, LR_DEFAULTCOLOR)
+        {
             set_flag_icon(ico);
         }
     }
@@ -129,8 +125,18 @@ fn main() -> Result<()> {
 
         // Explicitly set window icon for Task Manager
         if !flag_icon.is_invalid() {
-            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_BIG as usize)), Some(LPARAM(flag_icon.0 as isize)));
-            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_SMALL as usize)), Some(LPARAM(flag_icon.0 as isize)));
+            SendMessageW(
+                hwnd,
+                WM_SETICON,
+                Some(WPARAM(ICON_BIG as usize)),
+                Some(LPARAM(flag_icon.0 as isize)),
+            );
+            SendMessageW(
+                hwnd,
+                WM_SETICON,
+                Some(WPARAM(ICON_SMALL as usize)),
+                Some(LPARAM(flag_icon.0 as isize)),
+            );
         }
 
         // Use color key for transparency (black = transparent)
@@ -157,28 +163,28 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
     unsafe {
         match message {
             WM_CREATE => LRESULT(0),
-            
+
             WM_MEASUREITEM => handle_measure_item(hwnd, lparam),
-            
+
             WM_DRAWITEM => handle_draw_item(lparam),
-            
+
             WM_TIMER => {
                 let _ = InvalidateRect(Some(hwnd), None, true);
                 LRESULT(0)
             }
-            
+
             WM_PAINT => handle_paint(hwnd),
-            
+
             WM_LBUTTONDOWN => {
                 let _ = DefWindowProcW(hwnd, WM_SYSCOMMAND, WPARAM(0xF012), LPARAM(0));
                 LRESULT(0)
             }
-            
+
             WM_LBUTTONDBLCLK => {
                 show_calendar(hwnd);
                 LRESULT(0)
             }
-            
+
             WM_MOVE => {
                 let mut rect = RECT::default();
                 if GetWindowRect(hwnd, &mut rect).is_ok() {
@@ -186,12 +192,12 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                 }
                 LRESULT(0)
             }
-            
+
             WM_RBUTTONUP => {
                 show_context_menu(hwnd);
                 LRESULT(0)
             }
-            
+
             WM_TRAYICON => {
                 let event = (lparam.0 & 0xFFFF) as u32;
                 if event == WM_RBUTTONUP {
@@ -199,10 +205,11 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                 }
                 LRESULT(0)
             }
-            
+
             // Set rounded corners on popup menus (Windows 11)
             WM_ENTERIDLE => {
-                if wparam.0 == 2 { // MSGF_MENU
+                if wparam.0 == 2 {
+                    // MSGF_MENU
                     let menu_hwnd = HWND(lparam.0 as *mut std::ffi::c_void);
                     if !menu_hwnd.is_invalid() {
                         let preference = DWM_WINDOW_CORNER_PREFERENCE(2); // DWMWCP_ROUND
@@ -216,7 +223,7 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                 }
                 LRESULT(0)
             }
-            
+
             WM_COMMAND => {
                 let cmd = (wparam.0 & 0xFFFF) as u32;
                 match cmd {
@@ -250,12 +257,12 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                 }
                 LRESULT(0)
             }
-            
+
             WM_DESTROY => {
                 PostQuitMessage(0);
                 LRESULT(0)
             }
-            
+
             _ => DefWindowProcW(hwnd, message, wparam, lparam),
         }
     }

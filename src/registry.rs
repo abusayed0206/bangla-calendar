@@ -1,12 +1,9 @@
 // registry.rs - Windows registry operations for settings persistence
 
-use std::sync::atomic::Ordering;
-use windows::{
-    core::*,
-    Win32::System::Registry::*,
-};
-use crate::constants::*;
 use crate::AUTOSTART_ENABLED;
+use crate::constants::*;
+use std::sync::atomic::Ordering;
+use windows::{Win32::System::Registry::*, core::*};
 
 pub unsafe fn is_autostart_enabled() -> bool {
     let key_path = w!("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
@@ -15,7 +12,9 @@ pub unsafe fn is_autostart_enabled() -> bool {
     if unsafe { RegOpenKeyExW(HKEY_CURRENT_USER, key_path, Some(0), KEY_READ, &mut hkey) }.is_ok() {
         let value_name = HSTRING::from(APP_NAME);
         let result = unsafe { RegQueryValueExW(hkey, &value_name, None, None, None, None) };
-        unsafe { let _ = RegCloseKey(hkey); }
+        unsafe {
+            let _ = RegCloseKey(hkey);
+        }
         result.is_ok()
     } else {
         false
@@ -46,7 +45,9 @@ pub unsafe fn load_country_selection() -> u32 {
         {
             country = data;
         }
-        unsafe { let _ = RegCloseKey(hkey); }
+        unsafe {
+            let _ = RegCloseKey(hkey);
+        }
     }
     country
 }
@@ -118,7 +119,9 @@ pub unsafe fn load_position() -> (i32, i32) {
             y = data_y as i32;
         }
 
-        unsafe { let _ = RegCloseKey(hkey); }
+        unsafe {
+            let _ = RegCloseKey(hkey);
+        }
     }
 
     (x, y)
@@ -184,10 +187,14 @@ pub unsafe fn toggle_autostart(enable: bool) {
                 AUTOSTART_ENABLED.store(true, Ordering::SeqCst);
             }
         } else {
-            unsafe { let _ = RegDeleteValueW(hkey, &value_name); }
+            unsafe {
+                let _ = RegDeleteValueW(hkey, &value_name);
+            }
             AUTOSTART_ENABLED.store(false, Ordering::SeqCst);
         }
-        unsafe { let _ = RegCloseKey(hkey); }
+        unsafe {
+            let _ = RegCloseKey(hkey);
+        }
     }
 }
 
@@ -211,7 +218,9 @@ pub unsafe fn has_run_before() -> bool {
                 Some(&mut size),
             )
         };
-        unsafe { let _ = RegCloseKey(hkey); }
+        unsafe {
+            let _ = RegCloseKey(hkey);
+        }
         result.is_ok() && data == 1
     } else {
         false
