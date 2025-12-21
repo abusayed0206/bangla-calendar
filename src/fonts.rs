@@ -93,12 +93,12 @@ fn create_ekush_font(size: i32, weight: i32) -> HFONT {
 /// Install the embedded font and create all cached font handles
 pub fn install_fonts() {
     unsafe {
-        let mut num_fonts: u32 = 0;
+        let num_fonts: u32 = 0;
         let _font_handle = AddFontMemResourceEx(
             EKUSH_FONT_DATA.as_ptr() as *const std::ffi::c_void,
             EKUSH_FONT_DATA.len() as u32,
             None,
-            &mut num_fonts,
+            &num_fonts,
         );
 
         if num_fonts > 0 {

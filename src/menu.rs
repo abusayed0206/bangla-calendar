@@ -191,18 +191,18 @@ pub fn handle_measure_item(hwnd: HWND, lparam: LPARAM) -> LRESULT {
             (*mis).itemWidth = 200;
 
             let index = (*mis).itemData;
-            if let Ok(strings) = MENU_STRINGS.lock() {
-                if let Some(text) = strings.get(index) {
-                    let hdc = GetDC(Some(hwnd));
-                    let menu_font = get_menu_font();
-                    let old_font = SelectObject(hdc, menu_font.into());
-                    let text_wide: Vec<u16> = text.encode_utf16().collect();
-                    let mut size = SIZE::default();
-                    let _ = GetTextExtentPoint32W(hdc, &text_wide, &mut size);
-                    SelectObject(hdc, old_font);
-                    let _ = ReleaseDC(Some(hwnd), hdc);
-                    (*mis).itemWidth = (size.cx + 40) as u32;
-                }
+            if let Ok(strings) = MENU_STRINGS.lock()
+                && let Some(text) = strings.get(index)
+            {
+                let hdc = GetDC(Some(hwnd));
+                let menu_font = get_menu_font();
+                let old_font = SelectObject(hdc, menu_font.into());
+                let text_wide: Vec<u16> = text.encode_utf16().collect();
+                let mut size = SIZE::default();
+                let _ = GetTextExtentPoint32W(hdc, &text_wide, &mut size);
+                SelectObject(hdc, old_font);
+                let _ = ReleaseDC(Some(hwnd), hdc);
+                (*mis).itemWidth = (size.cx + 40) as u32;
             }
         }
         LRESULT(1)
@@ -235,66 +235,66 @@ pub fn handle_draw_item(lparam: LPARAM) -> LRESULT {
 
             // Draw text
             let index = (*dis).itemData;
-            if let Ok(strings) = MENU_STRINGS.lock() {
-                if let Some(text) = strings.get(index) {
-                    let menu_font = get_menu_font();
-                    let old_font = SelectObject(hdc, menu_font.into());
-                    SetBkMode(hdc, TRANSPARENT);
+            if let Ok(strings) = MENU_STRINGS.lock()
+                && let Some(text) = strings.get(index)
+            {
+                let menu_font = get_menu_font();
+                let old_font = SelectObject(hdc, menu_font.into());
+                SetBkMode(hdc, TRANSPARENT);
 
-                    let text_color = if is_disabled {
-                        MENU_DISABLED_TEXT
-                    } else {
-                        MENU_TEXT_COLOR
-                    };
-                    SetTextColor(hdc, COLORREF(text_color));
+                let text_color = if is_disabled {
+                    MENU_DISABLED_TEXT
+                } else {
+                    MENU_TEXT_COLOR
+                };
+                SetTextColor(hdc, COLORREF(text_color));
 
-                    let mut text_rect = rc;
-                    text_rect.left += 28;
-                    text_rect.right -= 10;
+                let mut text_rect = rc;
+                text_rect.left += 28;
+                text_rect.right -= 10;
 
-                    let mut text_wide: Vec<u16> = text.encode_utf16().collect();
+                let mut text_wide: Vec<u16> = text.encode_utf16().collect();
+                DrawTextW(
+                    hdc,
+                    &mut text_wide,
+                    &mut text_rect,
+                    DT_LEFT | DT_VCENTER | DT_SINGLELINE,
+                );
+
+                SelectObject(hdc, old_font);
+
+                // Draw checkmark if checked (using system font for checkmark)
+                if is_checked {
+                    let check_font = CreateFontW(
+                        16,
+                        0,
+                        0,
+                        0,
+                        FW_BOLD.0 as i32,
+                        0,
+                        0,
+                        0,
+                        DEFAULT_CHARSET,
+                        OUT_DEFAULT_PRECIS,
+                        CLIP_DEFAULT_PRECIS,
+                        CLEARTYPE_QUALITY,
+                        (DEFAULT_PITCH.0 | FF_DONTCARE.0) as u32,
+                        w!("Segoe UI Symbol"),
+                    );
+                    let old_check_font = SelectObject(hdc, check_font.into());
+                    SetTextColor(hdc, COLORREF(MENU_CHECK_COLOR));
+                    let mut check_rect = rc;
+                    check_rect.left += 6;
+                    check_rect.right = check_rect.left + 20;
+                    let mut check_mark: Vec<u16> = "✓".encode_utf16().collect();
                     DrawTextW(
                         hdc,
-                        &mut text_wide,
-                        &mut text_rect,
+                        &mut check_mark,
+                        &mut check_rect,
                         DT_LEFT | DT_VCENTER | DT_SINGLELINE,
                     );
-
-                    SelectObject(hdc, old_font);
-
-                    // Draw checkmark if checked (using system font for checkmark)
-                    if is_checked {
-                        let check_font = CreateFontW(
-                            16,
-                            0,
-                            0,
-                            0,
-                            FW_BOLD.0 as i32,
-                            0,
-                            0,
-                            0,
-                            DEFAULT_CHARSET,
-                            OUT_DEFAULT_PRECIS,
-                            CLIP_DEFAULT_PRECIS,
-                            CLEARTYPE_QUALITY,
-                            (DEFAULT_PITCH.0 | FF_DONTCARE.0) as u32,
-                            w!("Segoe UI Symbol"),
-                        );
-                        let old_check_font = SelectObject(hdc, check_font.into());
-                        SetTextColor(hdc, COLORREF(MENU_CHECK_COLOR));
-                        let mut check_rect = rc;
-                        check_rect.left += 6;
-                        check_rect.right = check_rect.left + 20;
-                        let mut check_mark: Vec<u16> = "✓".encode_utf16().collect();
-                        DrawTextW(
-                            hdc,
-                            &mut check_mark,
-                            &mut check_rect,
-                            DT_LEFT | DT_VCENTER | DT_SINGLELINE,
-                        );
-                        SelectObject(hdc, old_check_font);
-                        let _ = DeleteObject(check_font.into());
-                    }
+                    SelectObject(hdc, old_check_font);
+                    let _ = DeleteObject(check_font.into());
                 }
             }
         }

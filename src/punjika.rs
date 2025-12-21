@@ -180,8 +180,7 @@ fn get_first_day_weekday(month: i32, year: i32) -> i32 {
         }
     }
 
-    let weekday = (ref_weekday + total_days % 7 + 7) % 7;
-    weekday
+    (ref_weekday + total_days % 7 + 7) % 7
 }
 
 /// Draw the calendar using cached fonts
@@ -223,7 +222,7 @@ fn draw_calendar(hdc: HDC, rect: &RECT) {
         SetTextColor(hdc, COLORREF(CAL_HEADER_TEXT));
 
         // Month name
-        let month_name = if month >= 0 && month < 12 {
+        let month_name = if (0..12).contains(&month) {
             BANGLA_MONTHS[month as usize]
         } else {
             "?"
@@ -244,7 +243,7 @@ fn draw_calendar(hdc: HDC, rect: &RECT) {
 
         // Year and Season
         let year_bangla = to_bangla_number(year);
-        let season = if month >= 0 && month < 12 {
+        let season = if (0..12).contains(&month) {
             BANGLA_SEASONS[month as usize]
         } else {
             "?"
@@ -442,7 +441,7 @@ fn get_day_at_point(x: i32, y: i32, rect: &RECT) -> i32 {
     let col = (x - CAL_PADDING) / cell_width;
     let row = (y - grid_y) / CAL_CELL_SIZE;
 
-    if col < 0 || col >= 7 || row < 0 {
+    if !(0..7).contains(&col) || row < 0 {
         return -1;
     }
 

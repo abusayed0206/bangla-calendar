@@ -126,12 +126,8 @@ fn calculate_bangla_date_bd(
         30
     };
 
-    for m in 0..12 {
-        let month_days = if m == 10 {
-            falgun_days
-        } else {
-            BD_MONTH_DAYS[m]
-        };
+    for (m, &default_days) in BD_MONTH_DAYS.iter().enumerate() {
+        let month_days = if m == 10 { falgun_days } else { default_days };
         if remaining_days <= month_days {
             bangla_month = m as i32;
             break;
