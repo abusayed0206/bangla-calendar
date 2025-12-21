@@ -71,10 +71,10 @@ jobs:
           # Copy assets
           Copy-Item "msix-package/Assets/*" "$stagingDir/Assets/" -Recurse
           
-          # Copy and update manifest
+          # Copy and update manifest (use UTF8NoBOM to avoid XML parsing issues)
           $manifestContent = Get-Content "msix-package/AppxManifest.xml" -Raw
           $manifestContent = $manifestContent -replace 'Version="[\d.]+"', "Version=`"$msixVersion`""
-          $manifestContent | Set-Content "$stagingDir/AppxManifest.xml" -Encoding UTF8
+          [System.IO.File]::WriteAllText("$stagingDir/AppxManifest.xml", $manifestContent, [System.Text.UTF8Encoding]::new($false))
           
           # Copy binary
           Copy-Item "target/release/${{ env.APP_NAME }}.exe" "$stagingDir/"
