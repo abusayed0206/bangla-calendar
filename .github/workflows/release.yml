@@ -53,9 +53,14 @@ jobs:
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
           New-Item -ItemType Directory -Force -Path "release-artifacts" | Out-Null
-          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "release-artifacts/"
+          # Copy standalone exe with version in filename
+          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "release-artifacts/${{ env.APP_NAME }}-v$version.exe"
+          # Also copy for ZIP creation
+          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "release-artifacts/${{ env.APP_NAME }}.exe"
           Compress-Archive -Path "release-artifacts/${{ env.APP_NAME }}.exe" `
             -DestinationPath "release-artifacts/${{ env.APP_NAME }}-v$version-windows-x64.zip"
+          # Remove the unversioned exe (only keep versioned one)
+          Remove-Item "release-artifacts/${{ env.APP_NAME }}.exe"
 
       - name: Build MSIX Package
         shell: pwsh
@@ -169,7 +174,8 @@ jobs:
             
             | File | Description |
             |------|-------------|
-            | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip` | Portable Windows executable |
+            | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}.exe` | Standalone Windows executable |
+            | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip` | Portable ZIP archive |
             | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix` | Windows Store package (for sideloading) |
             | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload` | Windows Store submission package |
             
@@ -188,6 +194,7 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
             
           files: |
+            release-artifacts/${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}.exe
             release-artifacts/${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip
             release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix
             release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload
