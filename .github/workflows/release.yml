@@ -57,68 +57,73 @@ jobs:
           Compress-Archive -Path "release-artifacts/${{ env.APP_NAME }}.exe" `
             -DestinationPath "release-artifacts/${{ env.APP_NAME }}-v$version-windows-x64.zip"
 
-      - name: Update MSIX manifest version
-        shell: pwsh
-        run: |
-          $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
-          $manifestPath = "msix-package/AppxManifest.xml"
-          $content = Get-Content $manifestPath -Raw
-          $content = $content -replace 'Version="[\d.]+"', "Version=`"$msixVersion`""
-          $content | Set-Content $manifestPath -NoNewline
-          Write-Host "Updated manifest to version $msixVersion"
-
-      - name: Copy binary to MSIX package
-        shell: pwsh
-        run: |
-          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "msix-package/" -Force
-
-      - name: Generate resources.pri
-        shell: pwsh
-        run: |
-          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
-          $makepri = Get-ChildItem "$sdkPath\*\x64\makepri.exe" | 
-                     Sort-Object { [version]($_.Directory.Parent.Name) } -Descending | 
-                     Select-Object -First 1
-          
-          if (-not $makepri) {
-            Write-Error "MakePri.exe not found"
-            exit 1
-          }
-          
-          Write-Host "Using MakePri: $($makepri.FullName)"
-          
-          # Remove old pri files and config
-          Get-ChildItem "msix-package/*.pri" -ErrorAction SilentlyContinue | Remove-Item -Force
-          Remove-Item "msix-package/priconfig.xml" -ErrorAction SilentlyContinue
-          
-          & $makepri.FullName createconfig /cf "msix-package/priconfig.xml" /dq en-US /o
-          & $makepri.FullName new /pr "msix-package" /cf "msix-package/priconfig.xml" /mn "msix-package/AppxManifest.xml" /of "msix-package/resources.pri" /o
-
-      - name: Create MSIX package
+      - name: Build MSIX Package
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.VERSION }}"
           $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
           
-          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
-          $makeappx = Get-ChildItem "$sdkPath\*\x64\makeappx.exe" | 
-                      Sort-Object { [version]($_.Directory.Parent.Name) } -Descending | 
-                      Select-Object -First 1
+          # Create a clean staging directory
+          $stagingDir = "msix-staging"
+          New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
+          New-Item -ItemType Directory -Force -Path "$stagingDir/Assets" | Out-Null
           
-          if (-not $makeappx) {
-            Write-Error "MakeAppx.exe not found"
+          # Copy assets
+          Copy-Item "msix-package/Assets/*" "$stagingDir/Assets/" -Recurse
+          
+          # Copy and update manifest
+          $manifestContent = Get-Content "msix-package/AppxManifest.xml" -Raw
+          $manifestContent = $manifestContent -replace 'Version="[\d.]+"', "Version=`"$msixVersion`""
+          $manifestContent | Set-Content "$stagingDir/AppxManifest.xml" -Encoding UTF8
+          
+          # Copy binary
+          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "$stagingDir/"
+          
+          # Find Windows SDK tools
+          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
+          $sdkVersions = Get-ChildItem $sdkPath -Directory | Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } | Sort-Object { [version]$_.Name } -Descending
+          $latestSdk = $sdkVersions | Select-Object -First 1
+          
+          if (-not $latestSdk) {
+            Write-Error "Windows SDK not found"
             exit 1
           }
           
-          Write-Host "Using MakeAppx: $($makeappx.FullName)"
+          $makepri = Join-Path $latestSdk.FullName "x64\makepri.exe"
+          $makeappx = Join-Path $latestSdk.FullName "x64\makeappx.exe"
           
-          $msixPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msix"
-          & $makeappx.FullName pack /d "msix-package" /p $msixPath /o
+          Write-Host "Using SDK: $($latestSdk.Name)"
+          Write-Host "MakePri: $makepri"
+          Write-Host "MakeAppx: $makeappx"
+          
+          # Generate resources.pri using index name (bypasses manifest parsing)
+          Write-Host "`nGenerating resources.pri..."
+          & $makepri createconfig /cf "$stagingDir/priconfig.xml" /dq en-US /o
+          & $makepri new /pr "$stagingDir" /cf "$stagingDir/priconfig.xml" /in "abusayed.dev.BanglaCalenderforWindows" /of "$stagingDir/resources.pri" /o
           
           if ($LASTEXITCODE -ne 0) {
-            Write-Error "MSIX package creation failed"
+            Write-Host "MakePri failed, trying without resources.pri..."
+            # Continue without resources.pri - MakeAppx can still work
+          }
+          
+          # Remove priconfig.xml as it's not needed in the package
+          Remove-Item "$stagingDir/priconfig.xml" -ErrorAction SilentlyContinue
+          
+          # List staging contents
+          Write-Host "`nStaging directory contents:"
+          Get-ChildItem $stagingDir -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+          
+          # Create MSIX package
+          Write-Host "`nCreating MSIX package..."
+          $msixPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msix"
+          & $makeappx pack /d "$stagingDir" /p $msixPath /o
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MakeAppx failed"
             exit 1
           }
+          
+          Write-Host "MSIX package created: $msixPath"
 
       - name: Create MSIX upload package
         shell: pwsh
@@ -132,6 +137,8 @@ jobs:
           Copy-Item $msixPath $tempDir
           Compress-Archive -Path "$tempDir\*" -DestinationPath $uploadPath -Force
           Remove-Item $tempDir -Recurse -Force
+          
+          Write-Host "MSIX upload package created: $uploadPath"
 
       - name: List release artifacts
         shell: pwsh
