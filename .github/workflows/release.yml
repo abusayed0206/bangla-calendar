@@ -1,0 +1,193 @@
+# Release Workflow - Triggered on version tags
+# Creates GitHub Release with binaries and MSIX package for Windows Store
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on v0.0.1, v1.0.0, etc.
+
+env:
+  CARGO_TERM_COLOR: always
+  APP_NAME: bangla-calendar
+
+jobs:
+  build-release:
+    name: Build Release
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-
+
+      - name: Get version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          $msixVersion = "$version.0"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "MSIX_VERSION=$msixVersion" >> $env:GITHUB_OUTPUT
+          echo "Building version: $version (MSIX: $msixVersion)"
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          New-Item -ItemType Directory -Force -Path "release-artifacts" | Out-Null
+          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "release-artifacts/"
+          Compress-Archive -Path "release-artifacts/${{ env.APP_NAME }}.exe" `
+            -DestinationPath "release-artifacts/${{ env.APP_NAME }}-v$version-windows-x64.zip"
+
+      - name: Update MSIX manifest version
+        shell: pwsh
+        run: |
+          $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
+          $manifestPath = "msix-package/AppxManifest.xml"
+          $content = Get-Content $manifestPath -Raw
+          $content = $content -replace 'Version="[\d.]+"', "Version=`"$msixVersion`""
+          $content | Set-Content $manifestPath -NoNewline
+          Write-Host "Updated manifest to version $msixVersion"
+
+      - name: Copy binary to MSIX package
+        shell: pwsh
+        run: |
+          Copy-Item "target/release/${{ env.APP_NAME }}.exe" "msix-package/" -Force
+
+      - name: Generate resources.pri
+        shell: pwsh
+        run: |
+          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
+          $makepri = Get-ChildItem "$sdkPath\*\x64\makepri.exe" | 
+                     Sort-Object { [version]($_.Directory.Parent.Name) } -Descending | 
+                     Select-Object -First 1
+          
+          if (-not $makepri) {
+            Write-Error "MakePri.exe not found"
+            exit 1
+          }
+          
+          Write-Host "Using MakePri: $($makepri.FullName)"
+          
+          # Remove old pri files
+          Get-ChildItem "msix-package/*.pri" -ErrorAction SilentlyContinue | Remove-Item -Force
+          
+          & $makepri.FullName createconfig /cf "msix-package/priconfig.xml" /dq en-US /o
+          & $makepri.FullName new /pr "msix-package" /cf "msix-package/priconfig.xml" /of "msix-package/resources.pri" /o
+
+      - name: Create MSIX package
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
+          
+          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\bin"
+          $makeappx = Get-ChildItem "$sdkPath\*\x64\makeappx.exe" | 
+                      Sort-Object { [version]($_.Directory.Parent.Name) } -Descending | 
+                      Select-Object -First 1
+          
+          if (-not $makeappx) {
+            Write-Error "MakeAppx.exe not found"
+            exit 1
+          }
+          
+          Write-Host "Using MakeAppx: $($makeappx.FullName)"
+          
+          $msixPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msix"
+          & $makeappx.FullName pack /d "msix-package" /p $msixPath /o
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSIX package creation failed"
+            exit 1
+          }
+
+      - name: Create MSIX upload package
+        shell: pwsh
+        run: |
+          $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
+          $msixPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msix"
+          $uploadPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msixupload"
+          
+          $tempDir = Join-Path $env:TEMP "msixupload_temp_$([guid]::NewGuid())"
+          New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+          Copy-Item $msixPath $tempDir
+          Compress-Archive -Path "$tempDir\*" -DestinationPath $uploadPath -Force
+          Remove-Item $tempDir -Recurse -Force
+
+      - name: List release artifacts
+        shell: pwsh
+        run: |
+          Get-ChildItem "release-artifacts" | Format-Table Name, Length
+
+      - name: Generate changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: ".github/changelog-config.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Bangla Calendar v${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## Bangla Calendar v${{ steps.version.outputs.VERSION }}
+            
+            বাংলা ক্যালেন্ডার - A beautiful Bangla date widget for Windows
+            
+            ### Downloads
+            
+            | File | Description |
+            |------|-------------|
+            | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip` | Portable Windows executable |
+            | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix` | Windows Store package (for sideloading) |
+            | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload` | Windows Store submission package |
+            
+            ### Installation
+            
+            **Portable Version:**
+            1. Download the `.zip` file
+            2. Extract and run `bangla-calendar.exe`
+            
+            **Windows Store (Coming Soon):**
+            - Search "Bangla Calender for Windows" in Microsoft Store
+            - Store ID: `9NFWS2MHSH0T`
+            
+            ### Changes
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+          files: |
+            release-artifacts/${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip
+            release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix
+            release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload MSIX for Store submission
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-store-package
+          path: release-artifacts/*.msixupload
+          retention-days: 90

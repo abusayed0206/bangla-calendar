@@ -413,7 +413,7 @@ fn main() -> Result<()> {
         let hwnd = CreateWindowExW(
             WS_EX_TOOLWINDOW | WS_EX_LAYERED,
             window_class,
-            w!("বঙ্গ উইজেট"),
+            w!("বাংলা ক্যালেন্ডার"),
             WS_POPUP | WS_VISIBLE,
             x,
             y,
@@ -539,7 +539,7 @@ unsafe fn create_tray_icon(hwnd: HWND) -> Result<()> {
         ..Default::default()
     };
 
-    let tip = "বঙ্গ উইজেট - বাংলা তারিখ";
+    let tip = "বাংলা ক্যালেন্ডার -  বাংলা তারিখ";
     let tip_wide: Vec<u16> = tip.encode_utf16().chain(std::iter::once(0)).collect();
     let len = tip_wide.len().min(128);
     nid.szTip[..len].copy_from_slice(&tip_wide[..len]);

@@ -1,0 +1,61 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["feature", "enhancement"]
+    },
+    {
+      "title": "## 🐛 Bug Fixes",
+      "labels": ["bug", "fix", "bugfix"]
+    },
+    {
+      "title": "## 🎨 UI/UX Improvements",
+      "labels": ["ui", "ux", "design"]
+    },
+    {
+      "title": "## 📦 Dependencies",
+      "labels": ["dependencies", "deps"]
+    },
+    {
+      "title": "## 📚 Documentation",
+      "labels": ["documentation", "docs"]
+    },
+    {
+      "title": "## 🔧 Maintenance",
+      "labels": ["chore", "maintenance", "refactor"]
+    },
+    {
+      "title": "## 🌍 Localization",
+      "labels": ["i18n", "localization", "bangla"]
+    }
+  ],
+  "sort": {
+    "order": "ASC",
+    "on_property": "mergedAt"
+  },
+  "template": "#{{CHANGELOG}}\n\n#{{UNCATEGORIZED}}",
+  "pr_template": "- #{{TITLE}} (#{{NUMBER}}) @#{{AUTHOR}}",
+  "empty_template": "No changes since last release.",
+  "transformers": [
+    {
+      "pattern": "^(feat|feature):\\s*",
+      "target": ""
+    },
+    {
+      "pattern": "^(fix|bugfix):\\s*",
+      "target": ""
+    },
+    {
+      "pattern": "^(chore|docs|refactor):\\s*",
+      "target": ""
+    }
+  ],
+  "max_tags_to_fetch": 200,
+  "max_pull_requests": 200,
+  "max_back_track_time_days": 365,
+  "exclude_merge_branches": [],
+  "tag_resolver": {
+    "method": "semver"
+  },
+  "base_branches": ["main"]
+}

@@ -5,6 +5,8 @@ mod calendar;
 mod registry;
 mod menu;
 mod ui;
+mod punjika;
+mod fonts;
 
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicPtr, Ordering};
 use windows::{
@@ -20,43 +22,38 @@ use constants::*;
 use registry::*;
 use menu::*;
 use ui::*;
+use punjika::show_calendar;
+use fonts::install_fonts;
 
 // Embed the ICO file
 const FLAG_ICO_DATA: &[u8] = include_bytes!("../assets/Flag_of_Bangladesh.ico");
 
-// Global state
+// Global state (thread-safe)
 pub static AUTOSTART_ENABLED: AtomicBool = AtomicBool::new(false);
 pub static COUNTRY_SELECTION: AtomicU32 = AtomicU32::new(0); // 0 = Bangladesh, 1 = India
 
-// Global handles
-pub static mut CUSTOM_FONT: HFONT = HFONT(std::ptr::null_mut());
-pub static mut MENU_FONT: HFONT = HFONT(std::ptr::null_mut());
+// Thread-safe handle for flag icon
 static FLAG_ICON_PTR: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
 
 // Storage for owner-drawn menu item strings
 pub static MENU_STRINGS: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
 
+#[inline]
 pub fn get_flag_icon() -> HICON {
-    HICON(FLAG_ICON_PTR.load(Ordering::SeqCst))
+    HICON(FLAG_ICON_PTR.load(Ordering::Relaxed))
 }
 
+#[inline]
 fn set_flag_icon(icon: HICON) {
-    FLAG_ICON_PTR.store(icon.0, Ordering::SeqCst);
+    FLAG_ICON_PTR.store(icon.0, Ordering::Relaxed);
 }
 
 /// Load Bangladesh flag icon from embedded ICO file
-unsafe fn create_flag_icon() {
+fn create_flag_icon() {
     unsafe {
-        let icon = CreateIconFromResourceEx(
-            FLAG_ICO_DATA,
-            true,
-            0x00030000, // Icon version
-            32,
-            32,
-            LR_DEFAULTCOLOR,
-        );
-        
-        if let Ok(ico) = icon {
+        if let Ok(ico) = CreateIconFromResourceEx(
+            FLAG_ICO_DATA, true, 0x00030000, 32, 32, LR_DEFAULTCOLOR
+        ) {
             set_flag_icon(ico);
         }
     }
@@ -70,10 +67,11 @@ fn main() -> Result<()> {
             toggle_autostart(true);
             mark_has_run();
         }
-        AUTOSTART_ENABLED.store(is_autostart_enabled(), Ordering::SeqCst);
-        COUNTRY_SELECTION.store(load_country_selection(), Ordering::SeqCst);
+        AUTOSTART_ENABLED.store(is_autostart_enabled(), Ordering::Relaxed);
+        COUNTRY_SELECTION.store(load_country_selection(), Ordering::Relaxed);
 
-        install_embedded_font();
+        // Install fonts once at startup - no more per-paint allocations
+        install_fonts();
         create_flag_icon();
 
         let instance = GetModuleHandleW(None)?;
@@ -83,7 +81,7 @@ fn main() -> Result<()> {
         let flag_icon = get_flag_icon();
         let wc = WNDCLASSEXW {
             cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
-            style: CS_HREDRAW | CS_VREDRAW,
+            style: CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
             lpfnWndProc: Some(wndproc),
             hInstance: instance.into(),
             hCursor: LoadCursorW(None, IDC_ARROW)?,
@@ -117,7 +115,7 @@ fn main() -> Result<()> {
         let hwnd = CreateWindowExW(
             WS_EX_TOOLWINDOW | WS_EX_LAYERED,
             window_class,
-            w!("বঙ্গ উইজেট"),
+            w!("বাংলা ক্যালেন্ডার"),
             WS_POPUP | WS_VISIBLE,
             x,
             y,
@@ -176,6 +174,11 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                 LRESULT(0)
             }
             
+            WM_LBUTTONDBLCLK => {
+                show_calendar(hwnd);
+                LRESULT(0)
+            }
+            
             WM_MOVE => {
                 let mut rect = RECT::default();
                 if GetWindowRect(hwnd, &mut rect).is_ok() {
@@ -217,6 +220,9 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
             WM_COMMAND => {
                 let cmd = (wparam.0 & 0xFFFF) as u32;
                 match cmd {
+                    IDM_PUNJIKA => {
+                        show_calendar(hwnd);
+                    }
                     IDM_AUTOSTART_YES => {
                         toggle_autostart(true);
                     }
@@ -224,7 +230,7 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                         toggle_autostart(false);
                     }
                     IDM_COUNTRY_BD => {
-                        COUNTRY_SELECTION.store(0, Ordering::SeqCst);
+                        COUNTRY_SELECTION.store(0, Ordering::Relaxed);
                         save_country_selection(0);
                         let _ = InvalidateRect(Some(hwnd), None, true);
                     }

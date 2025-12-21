@@ -1,7 +1,14 @@
 [package]
-name = "bangla-date"
+name = "bangla-calendar"
 version = "0.0.2"
 edition = "2024"
+description = "বাংলা ক্যালেন্ডার এবং উইজেট আপনার উইন্ডোজ ডেস্কটপের জন্য"
+authors = ["Sayed <contact@sayed.app>"]
+license = "MIT"
+repository = "https://github.com/abusayed0206/bangla-calendar"
+homepage = "https://sayed.app"
+keywords = ["bangla", "bengali", "calendar", "widget", "date"]
+categories = ["gui"]
 
 [dependencies.windows]
 version = "0.61"
@@ -15,3 +22,26 @@ features = [
     "Win32_UI_Shell",
     "Win32_System_Registry",
 ]
+
+# Bundle configuration for packaging
+[package.metadata.bundle]
+name = "bangla-calendar"
+identifier = "app.sayed.bangla-calendar"
+icon = ["assets/Flag_of_Bangladesh.ico"]
+version = "0.0.2"
+copyright = "Copyright © 2025 Sayed. All rights reserved."
+category = "Utility"
+short_description = "বাংলা ক্যালেন্ডার একটি সুন্দর বাংলা তারিখ উইজেট"
+long_description = """
+বাংলা ক্যালেন্ডার আপনার উইন্ডোজ ডেস্কটপে সুন্দরভাবে বাংলা তারিখ প্রদর্শন করে।
+
+Features:
+• বাংলা তারিখ, মাস, বছর এবং ঋতু প্রদর্শন
+• বাংলা ক্যালেন্ডার (পুঞ্জিকা)
+• সিস্টেম ট্রে সাপোর্ট
+• স্বয়ংক্রিয়ভাবে শুরু হওয়ার অপশন
+"""
+
+# Windows MSI installer settings
+[package.metadata.bundle.windows]
+wix_path = "wix"

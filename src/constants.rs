@@ -6,6 +6,7 @@ use windows::Win32::UI::WindowsAndMessaging::WM_USER;
 pub const WM_TRAYICON: u32 = WM_USER + 1;
 
 // Menu item IDs
+pub const IDM_PUNJIKA: u32 = 1000;
 pub const IDM_AUTOSTART_YES: u32 = 1001;
 pub const IDM_AUTOSTART_NO: u32 = 1002;
 pub const IDM_COUNTRY_BD: u32 = 1003;
