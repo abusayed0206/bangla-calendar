@@ -133,21 +133,6 @@ jobs:
           
           Write-Host "MSIX package created: $msixPath"
 
-      - name: Create MSIX upload package
-        shell: pwsh
-        run: |
-          $msixVersion = "${{ steps.version.outputs.MSIX_VERSION }}"
-          $msixPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msix"
-          $uploadPath = "release-artifacts/BanglaCalendar_$($msixVersion)_x64.msixupload"
-          
-          $tempDir = Join-Path $env:TEMP "msixupload_temp_$([guid]::NewGuid())"
-          New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
-          Copy-Item $msixPath $tempDir
-          Compress-Archive -Path "$tempDir\*" -DestinationPath $uploadPath -Force
-          Remove-Item $tempDir -Recurse -Force
-          
-          Write-Host "MSIX upload package created: $uploadPath"
-
       - name: List release artifacts
         shell: pwsh
         run: |
@@ -176,18 +161,17 @@ jobs:
             |------|-------------|
             | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}.exe` | Standalone Windows executable |
             | `${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip` | Portable ZIP archive |
-            | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix` | Windows Store package (for sideloading) |
-            | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload` | Windows Store submission package |
+            | `BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix` | MSIX package (for sideloading) |
             
             ### Installation
             
             **Portable Version:**
-            1. Download the `.zip` file
-            2. Extract and run `bangla-calendar.exe`
+            1. Download the `.exe` or `.zip` file
+            2. Run `bangla-calendar.exe`
             
-            **Windows Store (Coming Soon):**
-            - Search "Bangla Calender for Windows" in Microsoft Store
-            - Store ID: `9NFWS2MHSH0T`
+            **Microsoft Store:**
+            - Search "Bangla Calendar" in Microsoft Store
+            - Store ID: `9PCMXNFHVB6F`
             
             ### Changes
             
@@ -197,15 +181,8 @@ jobs:
             release-artifacts/${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}.exe
             release-artifacts/${{ env.APP_NAME }}-v${{ steps.version.outputs.VERSION }}-windows-x64.zip
             release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msix
-            release-artifacts/BanglaCalendar_${{ steps.version.outputs.MSIX_VERSION }}_x64.msixupload
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload MSIX for Store submission
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-store-package
-          path: release-artifacts/*.msixupload
           retention-days: 90
