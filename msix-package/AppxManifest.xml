@@ -7,8 +7,8 @@
   IgnorableNamespaces="uap uap10 rescap">
 
   <Identity
-    Name="abusayed.dev.BanglaCalenderforWindows"
-    Version="0.0.2.0"
+    Name="abusayed.dev.BanglaCalendar"
+    Version="0.0.3.0"
     Publisher="CN=8EA73F0A-0DC1-449F-A896-493A34649C49"
     ProcessorArchitecture="x64" />
 

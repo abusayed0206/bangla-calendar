@@ -107,7 +107,7 @@ jobs:
           # Generate resources.pri using index name (bypasses manifest parsing)
           Write-Host "`nGenerating resources.pri..."
           & $makepri createconfig /cf "$stagingDir/priconfig.xml" /dq en-US /o
-          & $makepri new /pr "$stagingDir" /cf "$stagingDir/priconfig.xml" /in "abusayed.dev.BanglaCalenderforWindows" /of "$stagingDir/resources.pri" /o
+          & $makepri new /pr "$stagingDir" /cf "$stagingDir/priconfig.xml" /in "abusayed.dev.BanglaCalendar" /of "$stagingDir/resources.pri" /o
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "MakePri failed, trying without resources.pri..."
