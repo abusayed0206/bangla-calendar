@@ -15,8 +15,8 @@
   <a href="https://github.com/abusayed0206/bangla-calendar/actions/workflows/ci.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/abusayed0206/bangla-calendar/ci.yml?style=flat-square&label=CI" alt="CI Status">
   </a>
-  <a href="https://apps.microsoft.com/store/detail/9NFWS2MHSH0T">
-    <img src="https://img.shields.io/badge/Microsoft%20Store-9NFWS2MHSH0T-blue?style=flat-square&logo=microsoft" alt="Microsoft Store">
+  <a href="https://apps.microsoft.com/store/detail/9pcmxnfhvb6f">
+    <img src="https://img.shields.io/badge/Microsoft%20Store-9pcmxnfhvb6f-blue?style=flat-square&logo=microsoft" alt="Microsoft Store">
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/abusayed0206/bangla-calendar?style=flat-square" alt="License">
@@ -38,7 +38,7 @@
 ## 📥 Installation
 
 ### Option 1: Microsoft Store (Recommended)
-<a href="https://apps.microsoft.com/store/detail/9NFWS2MHSH0T">
+<a href="https://apps.microsoft.com/store/detail/9pcmxnfhvb6f">
   <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft Store" width="200">
 </a>
 
