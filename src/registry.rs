@@ -22,7 +22,7 @@ pub unsafe fn is_autostart_enabled() -> bool {
 }
 
 pub unsafe fn load_country_selection() -> u32 {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
     let mut country: u32 = 0;
 
@@ -53,7 +53,7 @@ pub unsafe fn load_country_selection() -> u32 {
 }
 
 pub unsafe fn save_country_selection(country: u32) {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
 
     if unsafe { RegCreateKeyW(HKEY_CURRENT_USER, key_path, &mut hkey) }.is_ok() {
@@ -75,7 +75,7 @@ pub unsafe fn save_country_selection(country: u32) {
 }
 
 pub unsafe fn load_position() -> (i32, i32) {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
     let mut x: i32 = -1;
     let mut y: i32 = -1;
@@ -128,7 +128,7 @@ pub unsafe fn load_position() -> (i32, i32) {
 }
 
 pub unsafe fn save_position(x: i32, y: i32) {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
 
     if unsafe { RegCreateKeyW(HKEY_CURRENT_USER, key_path, &mut hkey) }.is_ok() {
@@ -169,15 +169,23 @@ pub unsafe fn toggle_autostart(enable: bool) {
     let key_path = w!("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
     let mut hkey = HKEY::default();
 
-    if unsafe { RegOpenKeyExW(HKEY_CURRENT_USER, key_path, Some(0), KEY_WRITE, &mut hkey) }.is_ok()
-    {
+    // Use RegCreateKeyW to ensure the key exists
+    if unsafe { RegCreateKeyW(HKEY_CURRENT_USER, key_path, &mut hkey) }.is_ok() {
         let value_name = HSTRING::from(APP_NAME);
 
         if enable {
             if let Ok(exe_path) = std::env::current_exe() {
                 let path_str = exe_path.to_string_lossy();
-                let path_wide: Vec<u16> =
-                    path_str.encode_utf16().chain(std::iter::once(0)).collect();
+                // Quote the path if it contains spaces
+                let quoted_path = if path_str.contains(' ') {
+                    format!("\"{}\"", path_str)
+                } else {
+                    path_str.to_string()
+                };
+                let path_wide: Vec<u16> = quoted_path
+                    .encode_utf16()
+                    .chain(std::iter::once(0))
+                    .collect();
                 let path_bytes = unsafe {
                     std::slice::from_raw_parts(path_wide.as_ptr() as *const u8, path_wide.len() * 2)
                 };
@@ -200,7 +208,7 @@ pub unsafe fn toggle_autostart(enable: bool) {
 
 /// Check if the app has run before
 pub unsafe fn has_run_before() -> bool {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
 
     if unsafe { RegOpenKeyExW(HKEY_CURRENT_USER, key_path, Some(0), KEY_READ, &mut hkey) }.is_ok() {
@@ -229,7 +237,7 @@ pub unsafe fn has_run_before() -> bool {
 
 /// Mark that the app has run before
 pub unsafe fn mark_has_run() {
-    let key_path = w!("Software\\BongoWidget");
+    let key_path = w!("Software\\BanglaCalendar");
     let mut hkey = HKEY::default();
 
     if unsafe { RegCreateKeyW(HKEY_CURRENT_USER, key_path, &mut hkey) }.is_ok() {

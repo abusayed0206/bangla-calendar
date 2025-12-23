@@ -71,7 +71,7 @@ fn main() -> Result<()> {
         create_flag_icon();
 
         let instance = GetModuleHandleW(None)?;
-        let window_class = w!("BongoWidgetClass");
+        let window_class = w!("BanglaCalendarClass");
 
         // Use our custom flag icon for the window class
         let flag_icon = get_flag_icon();

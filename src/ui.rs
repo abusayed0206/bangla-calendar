@@ -44,7 +44,7 @@ pub fn create_tray_icon(hwnd: HWND) -> Result<()> {
             ..Default::default()
         };
 
-        let tip = "বাংলা ক্যালেন্ডার । বাংলা তারিখ";
+        let tip = "বাংলা ক্যালেন্ডার";
         let tip_wide: Vec<u16> = tip.encode_utf16().chain(std::iter::once(0)).collect();
         let len = tip_wide.len().min(128);
         nid.szTip[..len].copy_from_slice(&tip_wide[..len]);

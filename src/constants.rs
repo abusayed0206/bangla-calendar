@@ -16,7 +16,7 @@ pub const IDM_WEBSITE: u32 = 1006;
 pub const IDM_EXIT: u32 = 1007;
 
 // App constants
-pub const APP_NAME: &str = "BongoWidget";
+pub const APP_NAME: &str = "BanglaCalendar";
 pub const POS_KEY_X: &str = "PosX";
 pub const POS_KEY_Y: &str = "PosY";
 pub const COUNTRY_KEY: &str = "Country";
