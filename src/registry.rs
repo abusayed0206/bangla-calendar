@@ -10,10 +10,11 @@ pub unsafe fn is_autostart_enabled() -> bool {
     // Try MSIX StartupTask first
     if let Ok(op) = StartupTask::GetAsync(&HSTRING::from("BanglaCalendarStartup"))
         && let Ok(task) = op.get()
-            && let Ok(state) = task.State() {
-                // 1 = Enabled
-                return state.0 == 1;
-            }
+        && let Ok(state) = task.State()
+    {
+        // 1 = Enabled
+        return state.0 == 1;
+    }
 
     // Fallback to registry (for unpackaged)
     let key_path = w!("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
@@ -178,20 +179,21 @@ pub unsafe fn save_position(x: i32, y: i32) {
 pub unsafe fn toggle_autostart(enable: bool) {
     // Try MSIX StartupTask first
     if let Ok(op) = StartupTask::GetAsync(&HSTRING::from("BanglaCalendarStartup"))
-        && let Ok(task) = op.get() {
-            if enable {
-                // RequestEnableAsync can show a prompt, so we must not block the UI thread.
-                std::thread::spawn(move || {
-                    if let Ok(op_enable) = task.RequestEnableAsync() {
-                        let _ = op_enable.get();
-                    }
-                });
-            } else {
-                let _ = task.Disable();
-            }
-            AUTOSTART_ENABLED.store(enable, Ordering::SeqCst);
-            return;
+        && let Ok(task) = op.get()
+    {
+        if enable {
+            // RequestEnableAsync can show a prompt, so we must not block the UI thread.
+            std::thread::spawn(move || {
+                if let Ok(op_enable) = task.RequestEnableAsync() {
+                    let _ = op_enable.get();
+                }
+            });
+        } else {
+            let _ = task.Disable();
         }
+        AUTOSTART_ENABLED.store(enable, Ordering::SeqCst);
+        return;
+    }
 
     // Fallback to registry (for unpackaged)
     let key_path = w!("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
