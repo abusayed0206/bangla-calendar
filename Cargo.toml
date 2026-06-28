@@ -1,6 +1,6 @@
 [package]
 name = "bangla-calendar"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2024"
 description = "বাংলা ক্যালেন্ডার এবং উইজেট আপনার উইন্ডোজ ডেস্কটপের জন্য"
 authors = ["Sayed <contact@sayed.app>"]
@@ -21,14 +21,16 @@ features = [
     "Win32_System_LibraryLoader",
     "Win32_UI_Shell",
     "Win32_System_Registry",
+    "ApplicationModel",
+    "Foundation",
 ]
 
 # Bundle configuration for packaging
 [package.metadata.bundle]
 name = "bangla-calendar"
 identifier = "app.sayed.bangla-calendar"
-icon = ["assets/Flag_of_Bangladesh.ico"]
-version = "0.0.4"
+icon = ["assets/icon.ico"]
+version = "0.0.5"
 copyright = "Copyright © 2025 Sayed. All rights reserved."
 category = "Utility"
 short_description = "বাংলা ক্যালেন্ডার একটি সুন্দর বাংলা তারিখ উইজেট"
@@ -44,3 +46,6 @@ Features:
 # Windows MSI installer settings
 [package.metadata.bundle.windows]
 wix_path = "wix"
+
+[build-dependencies]
+winres = "0.1"

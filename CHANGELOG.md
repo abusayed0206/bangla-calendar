@@ -5,10 +5,17 @@ All notable changes to Bangla Calendar will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.5] - 2026-06-28
 
 ### Added
-- Initial release preparation
+- Native executable icon support so Task Manager and Windows Explorer show the correct logo
+- Custom MSIX app logo (বাংলা ক্যালেন্ডার) embedded directly into the executable
+
+### Fixed
+- Fixed Autostart functionality for Windows 10/11 MSIX packaged installations (resolving registry virtualization issues)
+- Consolidated app-wide branding to use a single unified icon instead of the Bangladesh flag
+- Resolved various Clippy lints and collapsed nested condition blocks for cleaner code
+- Replaced the embedded font with `BCC-Purno-Black-Color.ttf`
 
 ## [0.0.2] - 2025-12-21
 

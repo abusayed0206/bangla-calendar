@@ -6,7 +6,7 @@ use crate::fonts::{
     get_cal_date_font, get_cal_header_font, get_cal_nav_font, get_cal_sub_font,
     get_cal_weekday_font,
 };
-use crate::get_flag_icon;
+use crate::get_app_icon;
 use std::sync::atomic::{AtomicI32, AtomicPtr, Ordering};
 use windows::{
     Win32::Foundation::*, Win32::Graphics::Dwm::*, Win32::Graphics::Gdi::*,
@@ -77,8 +77,8 @@ pub fn show_calendar(parent: HWND) {
             hCursor: LoadCursorW(None, IDC_ARROW).unwrap_or_default(),
             hbrBackground: HBRUSH(std::ptr::null_mut()),
             lpszClassName: class_name,
-            hIcon: get_flag_icon(),
-            hIconSm: get_flag_icon(),
+            hIcon: get_app_icon(),
+            hIconSm: get_app_icon(),
             ..Default::default()
         };
         RegisterClassExW(&wc);
@@ -510,6 +510,21 @@ extern "system" fn calendar_wndproc(
 
                 draw_calendar(mem_dc, &rect);
 
+                let app_icon = get_app_icon();
+                if !app_icon.is_invalid() {
+                    SendMessageW(
+                        hwnd,
+                        WM_SETICON,
+                        Some(WPARAM(ICON_BIG as usize)),
+                        Some(LPARAM(app_icon.0 as isize)),
+                    );
+                    SendMessageW(
+                        hwnd,
+                        WM_SETICON,
+                        Some(WPARAM(ICON_SMALL as usize)),
+                        Some(LPARAM(app_icon.0 as isize)),
+                    );
+                }
                 let _ = BitBlt(
                     hdc,
                     0,

@@ -3,7 +3,7 @@
 use crate::calendar::get_current_bangla_date;
 use crate::constants::*;
 use crate::fonts::{get_font_line1, get_font_line2, get_font_line3};
-use crate::get_flag_icon;
+use crate::get_app_icon;
 use windows::{
     Win32::Foundation::*, Win32::Graphics::Gdi::*, Win32::UI::Shell::*,
     Win32::UI::WindowsAndMessaging::*, core::*,
@@ -29,15 +29,15 @@ pub fn calculate_widget_width() -> i32 {
 
 pub fn create_tray_icon(hwnd: HWND) -> Result<()> {
     unsafe {
-        let flag_icon = get_flag_icon();
+        let app_icon = get_app_icon();
         let mut nid = NOTIFYICONDATAW {
             cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
             hWnd: hwnd,
             uID: 1,
             uFlags: NIF_ICON | NIF_MESSAGE | NIF_TIP,
             uCallbackMessage: WM_TRAYICON,
-            hIcon: if !flag_icon.is_invalid() {
-                flag_icon
+            hIcon: if !app_icon.is_invalid() {
+                app_icon
             } else {
                 LoadIconW(None, IDI_APPLICATION)?
             },

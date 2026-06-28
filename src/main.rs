@@ -22,35 +22,35 @@ use registry::*;
 use ui::*;
 
 // Embed the ICO file
-const FLAG_ICO_DATA: &[u8] = include_bytes!("../assets/Flag_of_Bangladesh.ico");
+const APP_ICO_DATA: &[u8] = include_bytes!("../assets/icon.ico");
 
 // Global state (thread-safe)
 pub static AUTOSTART_ENABLED: AtomicBool = AtomicBool::new(false);
 pub static COUNTRY_SELECTION: AtomicU32 = AtomicU32::new(0); // 0 = Bangladesh, 1 = India
 
-// Thread-safe handle for flag icon
-static FLAG_ICON_PTR: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
+// Thread-safe handle for app icon
+static APP_ICON_PTR: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
 
 // Storage for owner-drawn menu item strings
 pub static MENU_STRINGS: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
 
 #[inline]
-pub fn get_flag_icon() -> HICON {
-    HICON(FLAG_ICON_PTR.load(Ordering::Relaxed))
+pub fn get_app_icon() -> HICON {
+    HICON(APP_ICON_PTR.load(Ordering::Relaxed))
 }
 
 #[inline]
-fn set_flag_icon(icon: HICON) {
-    FLAG_ICON_PTR.store(icon.0, Ordering::Relaxed);
+fn set_app_icon(icon: HICON) {
+    APP_ICON_PTR.store(icon.0, Ordering::Relaxed);
 }
 
-/// Load Bangladesh flag icon from embedded ICO file
-fn create_flag_icon() {
+/// Load app icon from embedded ICO file
+fn create_app_icon() {
     unsafe {
         if let Ok(ico) =
-            CreateIconFromResourceEx(FLAG_ICO_DATA, true, 0x00030000, 32, 32, LR_DEFAULTCOLOR)
+            CreateIconFromResourceEx(APP_ICO_DATA, true, 0x00030000, 32, 32, LR_DEFAULTCOLOR)
         {
-            set_flag_icon(ico);
+            set_app_icon(ico);
         }
     }
 }
@@ -68,13 +68,13 @@ fn main() -> Result<()> {
 
         // Install fonts once at startup - no more per-paint allocations
         install_fonts();
-        create_flag_icon();
+        create_app_icon();
 
         let instance = GetModuleHandleW(None)?;
         let window_class = w!("BanglaCalendarClass");
 
-        // Use our custom flag icon for the window class
-        let flag_icon = get_flag_icon();
+        // Use our custom app icon for the window class
+        let app_icon = get_app_icon();
         let wc = WNDCLASSEXW {
             cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
             style: CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
@@ -83,8 +83,8 @@ fn main() -> Result<()> {
             hCursor: LoadCursorW(None, IDC_ARROW)?,
             hbrBackground: HBRUSH(std::ptr::null_mut()),
             lpszClassName: window_class,
-            hIcon: flag_icon,
-            hIconSm: flag_icon,
+            hIcon: app_icon,
+            hIconSm: app_icon,
             ..Default::default()
         };
 
@@ -124,18 +124,18 @@ fn main() -> Result<()> {
         )?;
 
         // Explicitly set window icon for Task Manager
-        if !flag_icon.is_invalid() {
+        if !app_icon.is_invalid() {
             SendMessageW(
                 hwnd,
                 WM_SETICON,
                 Some(WPARAM(ICON_BIG as usize)),
-                Some(LPARAM(flag_icon.0 as isize)),
+                Some(LPARAM(app_icon.0 as isize)),
             );
             SendMessageW(
                 hwnd,
                 WM_SETICON,
                 Some(WPARAM(ICON_SMALL as usize)),
-                Some(LPARAM(flag_icon.0 as isize)),
+                Some(LPARAM(app_icon.0 as isize)),
             );
         }
 
@@ -245,7 +245,7 @@ extern "system" fn wndproc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPA
                         // India - disabled for now
                     }
                     IDM_FONT_LICENSE => {
-                        open_url("https://codepotro.com/font/ekush/");
+                        open_url("https://kriti.app/fonts/bb5d26a6");
                     }
                     IDM_WEBSITE => {
                         open_url("https://sayed.app");

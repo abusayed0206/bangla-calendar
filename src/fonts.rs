@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicPtr, Ordering};
 use windows::{Win32::Graphics::Gdi::*, core::*};
 
 // Embed the Ekush font directly into the executable
-const EKUSH_FONT_DATA: &[u8] = include_bytes!("../fonts/Ekush-Regular.ttf");
+const EKUSH_FONT_DATA: &[u8] = include_bytes!("../fonts/BCC-Purno-Black-Color.ttf");
 
 // Thread-safe font handles using AtomicPtr
 static MENU_FONT_PTR: AtomicPtr<std::ffi::c_void> = AtomicPtr::new(std::ptr::null_mut());
